@@ -24,6 +24,8 @@ public:
 	void Export(char *filename);
 	void Import(char *filename);
 	std::string Check(char *filename);
+
+	void PrintFiles(void);
 };
 
 #endif //MUSICLIB_H

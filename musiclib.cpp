@@ -18,6 +18,28 @@ typedef unsigned long long TSize;
 const size_t CHECK_SIZE = 12;
 const char CHECK[CHECK_SIZE] = "PasWD-KP-DA";
 
+int StringComparison(const char *str1, const char *str2) {
+	for (size_t i = 0; true; i++) {
+		if (str1[i] == '\0' && str2[i] != '\0') {
+			return -1;
+		}
+		if (str1[i] != '\0' && str2[i] == '\0') {
+			return 1;
+		}
+		if (str1[i] == '\0' && str2[i] == '\0') {
+			return 0;
+		}
+		if (str1[i] == str2[i]) {
+			continue;
+		}
+		if (str1[i] > str2[i]) {
+			return 1;
+		} else {
+			return -1;
+		}
+	}
+}
+
 TMusicLib::TMusicLib(void) {
 	this->Files.clear();
 	this->Lib.clear();
@@ -78,8 +100,8 @@ void TMusicLib::Export(char *filename) {
 		cout << "ERROR: Couldn't create file" << endl;
 		return;
 	}
-	cout << "Export filenames..." << endl;
 	fwrite(CHECK, sizeof(char), CHECK_SIZE, out);
+	cout << "Export filenames..." << endl;
 	TSize files_cnt = (TSize) this->Files.size();
 	fwrite(&files_cnt, sizeof(TSize), 1, out);
 	char nl = '\n';
@@ -92,6 +114,9 @@ void TMusicLib::Export(char *filename) {
 	}
 
 	cout << "Export map..." << endl;
+
+	TSize map_size = (TSize) this->Lib.size();
+	fwrite(&map_size, sizeof(TSize), 1, out);
 
 	for (auto i = this->Lib.begin(); i != this->Lib.end(); i++) {
 		TSize hash = (TSize) i->first;
@@ -111,9 +136,66 @@ void TMusicLib::Export(char *filename) {
 }
 
 void TMusicLib::Import(char *filename) {
-	
+	cout << "Import started" << endl;
+	FILE *in = fopen(filename, "rb");
+	if (in == NULL) {
+		cout << "ERROR: Couldn't open file" << endl;
+		return;
+	}
+	//cout << "Checking prefix..." << endl;
+	char prefix[CHECK_SIZE];
+	fread(prefix, sizeof(char), CHECK_SIZE, in);
+
+	if (StringComparison(CHECK, prefix) != 0) {
+		cout << "ERROR: Incorrect file" << endl;
+		return;
+	}
+	this->Lib.clear();
+	this->Files.clear();
+
+	cout << "Import filenames..." << endl;
+	TSize files_cnt;
+	fread(&files_cnt, sizeof(TSize), 1, in);
+	this->Files.resize((size_t) files_cnt);
+	for (size_t i = 0; i < this->Files.size(); i++) {
+		string tmp_str = "";
+		while (true) {
+			char tmp;
+			fread(&tmp, sizeof(char), 1, in);
+			if (tmp == '\n') {
+				break;
+			}
+			tmp_str += tmp;
+		}
+		this->Files[i] = tmp_str;
+	}
+
+	cout << "Import map..." << endl;
+	TSize map_size;
+	fread(&map_size, sizeof(TSize), 1, in);
+
+	for (size_t i = 0; i < (size_t) map_size; i++) {
+		TSize hash;
+		fread(&hash, sizeof(TSize), 1, in);
+		TSize vector_cnt;
+		fread(&vector_cnt, sizeof(TSize), 1, in);
+		for (size_t j = 0; j < (size_t) vector_cnt; j++) {
+			TSize dat_in[2];
+			fread(dat_in, sizeof(TSize), 2, in);
+			this->Lib[(size_t) hash].push_back(make_pair((size_t) dat_in[0], (size_t) dat_in[1]));
+		}
+	}
+	cout << "[DONE]" << endl << endl;
+	fclose(in);
+	cout << "SUCCESS!" << endl;
 }
 
 string TMusicLib::Check(char *filename) {
 	return "";
+}
+
+void TMusicLib::PrintFiles(void) {
+	for (size_t i = 0; i < this->Files.size(); i++) {
+		cout << this->Files[i] << endl;
+	}
 }
