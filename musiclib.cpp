@@ -191,6 +191,20 @@ void TMusicLib::Import(char *filename) {
 }
 
 string TMusicLib::Check(char *filename) {
+	vector <size_t> hash_arr;
+	ReadSingleMP3(filename, &hash_arr, &this->Mh);
+	map <size_t, map <size_t, size_t>> cnts;
+
+	for (size_t i = 0; i < hash_arr.size(); i++) {
+		for (size_t j = 0; j < this->Lib[hash_arr[i]].size(); j++) {
+			//Мегашикарная формула, которая заставит мой курсач работать
+			if (cnts.find(this->Lib[hash_arr[i]][j]) != cnts.end()) {
+
+			} else {
+				//cnts[this->Lib[hash_arr[i]][j]]
+			}
+		}
+	}
 	return "";
 }
 
