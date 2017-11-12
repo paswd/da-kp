@@ -33,6 +33,7 @@
 *test.*
 
 *.dat
+*.mp3
 prog
 out.txt
 !/lib/*

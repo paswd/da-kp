@@ -14,11 +14,12 @@
 
 class TMusicLib {
 private:
-	std::vector <std::string> Files(0);
-	std::map <size_t, std::vector <std::pair<size_t, size_t>>> Lib(0);
+	std::vector <std::string> Files;
+	std::map <size_t, std::vector <std::pair<size_t, size_t>>> Lib; //(id, time)
 	TMpg123 Mh;
 
 public:
+	TMusicLib(void);
 	void Build(char *filename);
 	void Export(char *filename);
 	void Import(char *filename);
