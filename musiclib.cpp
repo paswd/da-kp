@@ -17,6 +17,8 @@ typedef unsigned long long TSize;
 
 const size_t CHECK_SIZE = 12;
 const char CHECK[CHECK_SIZE] = "PasWD-KP-DA";
+const size_t MIN_DIFF = 1024;
+const string NF_MESSAGE = "! NOT FOUND";
 
 int StringComparison(const char *str1, const char *str2) {
 	for (size_t i = 0; true; i++) {
@@ -190,22 +192,69 @@ void TMusicLib::Import(char *filename) {
 	cout << "SUCCESS!" << endl;
 }
 
+void MapInit(map <size_t, pair <size_t, map <size_t, size_t>>> *mp, size_t song, size_t time) {
+	if (mp->find(song) == mp->end()) {
+		(*mp)[song].first = 0;
+		(*mp)[song].second[time] = 0;
+		return;
+	}
+
+	if ((*mp)[song].second.find(time) == (*mp)[song].second.end()) {
+		(*mp)[song].second[time] = 0;
+		return;
+	}
+}
+
+bool IsGreater(size_t a, size_t b) {
+	return a > b;
+}
+size_t Diff(size_t a, size_t b) {
+	if (a > b) {
+		return a - b;
+	} else {
+		return b - a;
+	}
+}
+
 string TMusicLib::Check(char *filename) {
 	vector <size_t> hash_arr;
 	ReadSingleMP3(filename, &hash_arr, &this->Mh);
-	map <size_t, map <size_t, size_t>> cnts;
+	map <size_t, pair <size_t, map <size_t, size_t>>> cnts;
 
 	for (size_t i = 0; i < hash_arr.size(); i++) {
 		for (size_t j = 0; j < this->Lib[hash_arr[i]].size(); j++) {
 			//Мегашикарная формула, которая заставит мой курсач работать
-			if (cnts.find(this->Lib[hash_arr[i]][j]) != cnts.end()) {
+			size_t song = this->Lib[hash_arr[i]][j].first
+			size_t time = this->Lib[hash_arr[i]][j].second;
+			MapInit(&cnts, song, time);
+
+			//cnts[song].second[time - i]++;
+			size_t current_value = ++cnts[song].second[time - i];
+			if (current_value > cnts[song].first) {
+				cnts[song].first = current_value;
+			}
+
+			/*if (cnts.find(this->Lib[hash_arr[i]][j]) != cnts.end()) {
 
 			} else {
 				//cnts[this->Lib[hash_arr[i]][j]]
-			}
+			}*/
 		}
 	}
-	return "";
+	vector <pair <size_t, size_t>> found(0);
+	for (auto i = cnts.begin(); i <= cnts.end(); i++) {
+		found.push_back(make_pair(i->second.first, i->first));
+	}
+	if (found.size() < 2) {
+		return NF_MESSAGE;
+	}
+	sort(found.begin(), found.end(), IsGreater);
+
+	if (Diff(found[0].second, found[1].second) < MIN_DIFF) {
+		return NF_MESSAGE;
+	}
+
+	return this->Files[found[0].second];
 }
 
 void TMusicLib::PrintFiles(void) {
