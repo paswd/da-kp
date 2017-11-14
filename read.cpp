@@ -104,7 +104,6 @@ void TransformAudioToHashArray(vector <TDouble> *audio, vector <TSize> *out) {
 	TSize audio_size = audio->size();
 	TSize block_num = audio_size / BLOCK_SIZE;
 
-	//vector <TSize> res(0);
 	out->resize(0);
 
 	for (TSize i = 0; i < block_num; i++) {
@@ -134,41 +133,10 @@ void TransformAudioToHashArray(vector <TDouble> *audio, vector <TSize> *out) {
 
 		out->push_back(GetHashBy4Elems(max_freq));
 	}
-
-	//return res;
 }
 
 void ReadSingleMP3(char *name, vector <TSize> *out, TMpg123 *mh) {
 	vector <TDouble> audio;
 	ReadFile(&audio, mh->GetHandle(), name);
 	TransformAudioToHashArray(&audio, out);
-
-	/*TSize audio_size = audio.size();
-	TSize block_num  audio_size / BLOCK_SIZE;
-
-	vector <vector <TComplex>> */
-	// Library deinitialization (END)
 }
-
-
-/*
-int main(int argc, char *argv[]) {
-	if(argc == 1){
-		fprintf(stderr, "USAGE: %s <mp3 file>*\n", argv[0]);
-		return 1;
-	}
-	// Library initialization (BEGIN)
-	assert(mpg123_init() == MPG123_OK);
-	mpg123_handle *mh = mpg123_new(NULL, NULL);
-	assert(mh != NULL);
-	long flags = MPG123_MONO_MIX | MPG123_QUIET | MPG123_FORCE_TDouble;
-	assert(mpg123_param(mh, MPG123_FLAGS, flags, 0.) == MPG123_OK);
-	// Library initialization (END)
-	for(int i = 1; i < argc; ++i)
-		process_file(mh, argv[i]);
-	// Library deinitialization (BEGIN)
-	mpg123_delete(mh);
-	mpg123_exit();
-	// Library deinitialization (END)
-}
-*/

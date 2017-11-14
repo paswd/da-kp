@@ -16,16 +16,17 @@
 
 using namespace std;
 
-//typedef unsigned long long TSize;
 
 const TSize CHECK_SIZE = 12;
 const char CHECK[CHECK_SIZE] = "PasWD-KP-DA";
-const TSize MIN_DIFF = 1024;
+const TSize MIN_DIFF = 64;
 const string NF_MESSAGE = "! NOT FOUND";
 const string MSG_DONE = "[DONE]";
 const string MSG_SPACE = "    ";
+const string MSG_FOUND = "[FOUND]: ";
+const string MSG_NOT_FOUND = "[NOT FOUND]: ";
 
-int StringComparison(const char *str1, const char *str2) {
+TInt StringComparison(const char *str1, const char *str2) {
 	for (TSize i = 0; true; i++) {
 		if (str1[i] == '\0' && str2[i] != '\0') {
 			return -1;
@@ -110,7 +111,7 @@ void TMusicLib::Export(char *filename) {
 	}
 	fwrite(CHECK, sizeof(char), CHECK_SIZE, out);
 	cout << "Export filenames..." << endl;
-	TSize files_cnt = (TSize) this->Files.size();
+	TSize files_cnt = this->Files.size();
 	fwrite(&files_cnt, sizeof(TSize), 1, out);
 	char nl = '\n';
 	for (TSize i = 0; i < this->Files.size(); i++) {
@@ -123,18 +124,18 @@ void TMusicLib::Export(char *filename) {
 
 	cout << "Export map..." << endl;
 
-	TSize map_size = (TSize) this->Lib.size();
+	TSize map_size = this->Lib.size();
 	fwrite(&map_size, sizeof(TSize), 1, out);
 
 	for (auto i = this->Lib.begin(); i != this->Lib.end(); i++) {
-		TSize hash = (TSize) i->first;
+		TSize hash = i->first;
 		fwrite(&hash, sizeof(TSize), 1, out);
 		TSize vector_cnt = i->second.size();
 		fwrite(&vector_cnt, sizeof(TSize), 1, out);
 		for (TSize j = 0; j < i->second.size(); j++) {
 			TSize write_tmp[2];
-			write_tmp[0] = (TSize) i->second[j].first;
-			write_tmp[1] = (TSize) i->second[j].second;
+			write_tmp[0] = i->second[j].first;
+			write_tmp[1] = i->second[j].second;
 			fwrite(write_tmp, sizeof(TSize), 2, out);
 		}
 	}
@@ -165,7 +166,7 @@ void TMusicLib::Import(char *filename) {
 	cout << "Import filenames..." << endl;
 	TSize files_cnt;
 	fread(&files_cnt, sizeof(TSize), 1, in);
-	this->Files.resize((TSize) files_cnt);
+	this->Files.resize(files_cnt);
 	for (TSize i = 0; i < this->Files.size(); i++) {
 		string tmp_str = "";
 		while (true) {
@@ -183,15 +184,15 @@ void TMusicLib::Import(char *filename) {
 	TSize map_size;
 	fread(&map_size, sizeof(TSize), 1, in);
 
-	for (TSize i = 0; i < (TSize) map_size; i++) {
+	for (TSize i = 0; i < map_size; i++) {
 		TSize hash;
 		fread(&hash, sizeof(TSize), 1, in);
 		TSize vector_cnt;
 		fread(&vector_cnt, sizeof(TSize), 1, in);
-		for (TSize j = 0; j < (TSize) vector_cnt; j++) {
+		for (TSize j = 0; j < vector_cnt; j++) {
 			TSize dat_in[2];
 			fread(dat_in, sizeof(TSize), 2, in);
-			this->Lib[(TSize) hash].push_back(make_pair((TSize) dat_in[0], (TSize) dat_in[1]));
+			this->Lib[hash].push_back(make_pair(dat_in[0], dat_in[1]));
 		}
 	}
 	cout << MSG_DONE << endl << endl;
@@ -280,21 +281,25 @@ string TMusicLib::Check(char *filename) {
 	for (auto i = cnts.begin(); i != cnts.end(); i++) {
 		found.push_back(make_pair(i->second.first, i->first));
 	}
-	cout << MSG_DONE << endl;
+	cout << MSG_DONE << endl << endl;
 	//cout << "Found size = " << found.size() << endl;
 	if (found.size() == 0) {
-		cout << "NOT FOUND: no songs found" << endl;
+		cout << MSG_NOT_FOUND << "no songs found" << endl;
 		return NF_MESSAGE;
 	}
 	sort(found.begin(), found.end(), IsGreater);
 
 	if (found.size() > 1) {
 		if (Diff(found[0].second, found[1].second) < MIN_DIFF) {
-			cout << "NOT FOUND: found same songs" << endl;
+			cout << MSG_NOT_FOUND << "found same songs" << endl;
 			return NF_MESSAGE;
 		}
 	}
-	cout << "FOUND: " << this->Files[found[0].second] << endl;
+	if (found[0].first < MIN_DIFF) {
+		cout << MSG_NOT_FOUND << "too short sample" << endl;
+		return NF_MESSAGE;
+	}
+	cout << MSG_FOUND << this->Files[found[0].second] << endl;
 	return this->Files[found[0].second];
 }
 
