@@ -108,6 +108,7 @@ void TMusicLib::Export(char *filename) {
 	FILE *out = fopen(filename, "wb");
 	if (out == NULL) {
 		cout << "ERROR: Couldn't create file" << endl;
+		fclose(out);
 		return;
 	}
 	fwrite(CHECK, sizeof(char), CHECK_SIZE, out);
@@ -151,6 +152,7 @@ void TMusicLib::Import(char *filename) {
 	FILE *in = fopen(filename, "rb");
 	if (in == NULL) {
 		cout << "ERROR: Couldn't open file" << endl;
+		fclose(in);
 		return;
 	}
 	//cout << "Checking prefix..." << endl;
