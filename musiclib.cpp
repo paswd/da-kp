@@ -10,6 +10,7 @@
 #include <vector>
 #include <mpg123.h>
 #include <algorithm>
+#include <fstream>
 #include "read.h"
 #include "types.h"
 
@@ -22,6 +23,7 @@ const char CHECK[CHECK_SIZE] = "PasWD-KP-DA";
 const TSize MIN_DIFF = 1024;
 const string NF_MESSAGE = "! NOT FOUND";
 const string MSG_DONE = "[DONE]";
+const string MSG_SPACE = "    ";
 
 int StringComparison(const char *str1, const char *str2) {
 	for (TSize i = 0; true; i++) {
@@ -196,6 +198,16 @@ void TMusicLib::Import(char *filename) {
 	cout << this->Lib.size() << " hash notes was imported" << endl;
 	fclose(in);
 	cout << "SUCCESS!" << endl;
+	/*ofstream ofs("import_data.txt", std::ofstream::out);
+	ofs << "Import data:" << endl;
+	for (auto i = this->Lib.begin(); i != this->Lib.end(); i++) {
+		ofs << "Hash: " << i->first << endl;
+		for (TSize j = 0; j < i->second.size(); j++) {
+			ofs << MSG_SPACE << i->second[j].first << " " << i->second[j].second << endl;
+		}
+		ofs << endl;
+	}
+	ofs.close();*/
 }
 
 void MapInit(map <TSize, pair <TSize, map <TSize, TSize>>> *mp, TSize song, TSize time) {
@@ -225,21 +237,33 @@ TSize Diff(TSize a, TSize b) {
 string TMusicLib::Check(char *filename) {
 	printf("Filename: %s\n", filename);
 	vector <TSize> hash_arr;
+	cout << "Begin searching..." << endl;
 	ReadSingleMP3(filename, &hash_arr, &this->Mh);
 	map <TSize, pair <TSize, map <TSize, TSize>>> cnts;
-	cout << "Begin searching..." << endl;
 
+	//ofstream ofs("check_data.txt", std::ofstream::out);
+	//ofs << "Hash num = " << hash_arr.size() << endl;
+	//ofs << "=====================" << endl << endl;
 	for (TSize i = 0; i < hash_arr.size(); i++) {
+		//ofs << this->Lib[hash_arr[i]].size() << endl;
 		for (TSize j = 0; j < this->Lib[hash_arr[i]].size(); j++) {
 			TSize song = this->Lib[hash_arr[i]][j].first;
 			TSize time = this->Lib[hash_arr[i]][j].second;
 			MapInit(&cnts, song, time);
+			//ofs << "Song = " << song << endl;
+			//ofs << "Time = " << time << endl;
+			//ofs << "Time pos = " << time - i << endl;
 
-			cnts[song].second[time - i]++;
-			TSize current_value = cnts[song].second[time - i];
-			//TSize current_value = ++cnts[song].second[time - i];
+			//[song].second[time - i]++;
+			//TSize current_value = cnts[song].second[time - i];
+			TSize current_value = ++cnts[song].second[time - i];
+			//ofs << "Curr value = " << current_value << endl;
+			//ofs << "Max value = " << cnts[song].first << endl;
 			if (current_value > cnts[song].first) {
 				cnts[song].first = current_value;
+				//ofs << "Updated: TRUE" << endl;
+			} else {
+				//ofs << "Updated: FALSE" << endl;
 			}
 
 			/*if (cnts.find(this->Lib[hash_arr[i]][j]) != cnts.end()) {
@@ -248,26 +272,29 @@ string TMusicLib::Check(char *filename) {
 				//cnts[this->Lib[hash_arr[i]][j]]
 			}*/
 		}
+		//ofs << "---------" << endl;
 	}
-	cout << "cnts.size() = " << cnts.size() << endl;
+	//ofs.close();
+	//cout << "cnts.size() = " << cnts.size() << endl;
 	vector <pair <TSize, TSize>> found(0);
 	for (auto i = cnts.begin(); i != cnts.end(); i++) {
 		found.push_back(make_pair(i->second.first, i->first));
 	}
 	cout << MSG_DONE << endl;
-	cout << "Found size = " << found.size() << endl;
-	if (found.size() < 2) {
-		cout << "NOT FOUND: too small same blocks" << endl;
+	//cout << "Found size = " << found.size() << endl;
+	if (found.size() == 0) {
+		cout << "NOT FOUND: no songs found" << endl;
 		return NF_MESSAGE;
 	}
 	sort(found.begin(), found.end(), IsGreater);
 
-	if (Diff(found[0].second, found[1].second) < MIN_DIFF) {
-		cout << "NOT FOUND: found same songs" << endl;
-		return NF_MESSAGE;
+	if (found.size() > 1) {
+		if (Diff(found[0].second, found[1].second) < MIN_DIFF) {
+			cout << "NOT FOUND: found same songs" << endl;
+			return NF_MESSAGE;
+		}
 	}
-
-
+	cout << "FOUND: " << this->Files[found[0].second] << endl;
 	return this->Files[found[0].second];
 }
 
