@@ -54,6 +54,7 @@ int main(int argc, char *argv[]) {
 
 		if (is_input && is_output) {
 			lib.Build(argv[input_id]);
+			cout << endl;
 			lib.Export(argv[output_id]);
 
 			cout << MSG_INDEX_SUCCESS << endl;
@@ -97,6 +98,7 @@ int main(int argc, char *argv[]) {
 
 		if (is_input && is_output && is_index) {
 			lib.Import(argv[index_id]);
+			cout << endl;
 			string res = lib.Check(argv[input_id]);
 			ofstream ofs(argv[output_id], std::ofstream::out);
 			ofs << res << endl;

@@ -4,6 +4,8 @@ COMPILLER=g++
 #all: lib start
 all: start
 
+da-kp: start
+
 #start: main.o
 #	$(COMPILLER) $(FLAGS) -o da-lab4 main.o -L. lib/lib-z-search.a
 

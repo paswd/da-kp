@@ -99,7 +99,7 @@ void TMusicLib::Build(char *filename) {
 	cout << MSG_DONE << endl << endl;
 	cout << "Added " << this->Lib.size() << " hash notes" << endl;
 	fclose(in);
-	cout << "SUCCESS!" << endl;
+	//cout << "SUCCESS!" << endl;
 }
 
 void TMusicLib::Export(char *filename) {
@@ -142,7 +142,7 @@ void TMusicLib::Export(char *filename) {
 	cout << MSG_DONE << endl << endl;
 	cout << this->Lib.size() << " hash notes was exported" << endl;
 	fclose(out);
-	cout << "SUCCESS!" << endl;
+	//cout << "SUCCESS!" << endl;
 }
 
 void TMusicLib::Import(char *filename) {
@@ -198,7 +198,7 @@ void TMusicLib::Import(char *filename) {
 	cout << MSG_DONE << endl << endl;
 	cout << this->Lib.size() << " hash notes was imported" << endl;
 	fclose(in);
-	cout << "SUCCESS!" << endl;
+	//cout << "SUCCESS!" << endl;
 	/*ofstream ofs("import_data.txt", std::ofstream::out);
 	ofs << "Import data:" << endl;
 	for (auto i = this->Lib.begin(); i != this->Lib.end(); i++) {
