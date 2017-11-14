@@ -9,18 +9,19 @@
 #include <vector>
 #include <complex>
 #include <mpg123.h>
+#include "types.h"
 
 using namespace std;
 
 typedef float TDouble;
 typedef complex<TDouble> TComplex;
 
-const size_t BLOCK_SIZE = 4096;
-const size_t RANGE_NUM = 4;
-const size_t RANGE[RANGE_NUM] = {40, 80, 120, 180};
-const size_t RANGE_MIN_VALUE = 40;
-const size_t RANGE_MAX_VALUE = 300;
-const size_t HASH_MD_CONST = 2;
+const TSize BLOCK_SIZE = 4096;
+const TSize RANGE_NUM = 4;
+const TSize RANGE[RANGE_NUM] = {40, 80, 120, 180};
+const TSize RANGE_MIN_VALUE = 40;
+const TSize RANGE_MAX_VALUE = 300;
+const TSize HASH_MD_CONST = 2;
 
 void ReadFile(vector <TDouble> *arr, mpg123_handle *mh, const char* file) {
 	// Open file
@@ -32,10 +33,10 @@ void ReadFile(vector <TDouble> *arr, mpg123_handle *mh, const char* file) {
 	// Prevent warning (END)
 	const int part_size = 1024;
 	unsigned char part[part_size];
-	size_t bytes_read;
+	TSize bytes_read;
 	// Vector for decoded signal
 	//vector <TDouble> arr;
-	size_t bytes_processed = 0;
+	TSize bytes_processed = 0;
 	do {
 		int err = mpg123_read(mh, part, part_size, &bytes_read);
 		arr->resize((bytes_processed + bytes_read) / 4 + 1);
@@ -54,14 +55,14 @@ void ReadFile(vector <TDouble> *arr, mpg123_handle *mh, const char* file) {
 }
 
 void FFT(vector <TComplex> *arr) {
-	size_t size = arr->size();
+	TSize size = arr->size();
 	if (size <= 1) {
 		return;
 	}
 	vector <TComplex> arr1(size / 2);
 	vector <TComplex> arr2(size / 2);
 
-	for (size_t i = 0, j = 0; i < size; i += 2, j++) {
+	for (TSize i = 0, j = 0; i < size; i += 2, j++) {
 		arr1[j] = (*arr)[i];
 		arr2[j] = (*arr)[i + 1];
 	}
@@ -74,15 +75,15 @@ void FFT(vector <TComplex> *arr) {
 	TComplex w(1.);
 	TComplex wn(cos(coeff), sin(coeff));
 
-	for (size_t i = 0; i < size / 2; i++) {
+	for (TSize i = 0; i < size / 2; i++) {
 		(*arr)[i] = arr1[i] + w * arr2[i];
 		(*arr)[i + size / 2] = arr1[i] - w * arr2[i];
 		w *= wn;
 	}
 }
 
-size_t GetRangeID(size_t freq) {
-	size_t res;
+TSize GetRangeID(TSize freq) {
+	TSize res;
 	for (res = 0; res < RANGE_NUM; res++) {
 		if (RANGE[res] < freq) {
 			return res;
@@ -90,8 +91,8 @@ size_t GetRangeID(size_t freq) {
 	}
 	return RANGE_NUM - 1;
 }
-size_t GetHashBy4Elems(size_t *val) {
-	size_t res = val[0] - (val[0] % HASH_MD_CONST);
+TSize GetHashBy4Elems(TSize *val) {
+	TSize res = val[0] - (val[0] % HASH_MD_CONST);
 	res += (val[1] - (val[1] % HASH_MD_CONST)) * 100;
 	res += (val[2] - (val[2] % HASH_MD_CONST)) * 100000;
 	res += (val[3] - (val[3] % HASH_MD_CONST)) * 100000000;
@@ -99,16 +100,16 @@ size_t GetHashBy4Elems(size_t *val) {
 	return res;
 }
 
-void TransformAudioToHashArray(vector <TDouble> *audio, vector <size_t> *out) {
-	size_t audio_size = audio->size();
-	size_t block_num = audio_size / BLOCK_SIZE;
+void TransformAudioToHashArray(vector <TDouble> *audio, vector <TSize> *out) {
+	TSize audio_size = audio->size();
+	TSize block_num = audio_size / BLOCK_SIZE;
 
-	//vector <size_t> res(0);
+	//vector <TSize> res(0);
 	out->resize(0);
 
-	for (size_t i = 0; i < block_num; i++) {
+	for (TSize i = 0; i < block_num; i++) {
 		vector <TComplex> complex_array(BLOCK_SIZE);
-		for (size_t j = 0; j < BLOCK_SIZE; j++) {
+		for (TSize j = 0; j < BLOCK_SIZE; j++) {
 			TComplex tmp((*audio)[(i * BLOCK_SIZE) + j], 0);
 			complex_array[j] = tmp;
 		}
@@ -116,14 +117,14 @@ void TransformAudioToHashArray(vector <TDouble> *audio, vector <size_t> *out) {
 		FFT(&complex_array);
 
 		TDouble highval[RANGE_NUM];
-		for (size_t i = 0; i < RANGE_NUM; i++) {
+		for (TSize i = 0; i < RANGE_NUM; i++) {
 			highval[i] = -1.;
 		}
-		size_t max_freq[RANGE_NUM];
+		TSize max_freq[RANGE_NUM];
 
-		for (size_t freq = RANGE_MIN_VALUE; freq < RANGE_MAX_VALUE; freq++) {
+		for (TSize freq = RANGE_MIN_VALUE; freq < RANGE_MAX_VALUE; freq++) {
 			TDouble intensity = log(abs(complex_array[freq]) + 1.);
-			size_t id = GetRangeID(freq);
+			TSize id = GetRangeID(freq);
 
 			if (intensity > highval[id]) {
 				highval[id] = intensity;
@@ -137,13 +138,13 @@ void TransformAudioToHashArray(vector <TDouble> *audio, vector <size_t> *out) {
 	//return res;
 }
 
-void ReadSingleMP3(char *name, vector <size_t> *out, TMpg123 *mh) {
+void ReadSingleMP3(char *name, vector <TSize> *out, TMpg123 *mh) {
 	vector <TDouble> audio;
 	ReadFile(&audio, mh->GetHandle(), name);
 	TransformAudioToHashArray(&audio, out);
 
-	/*size_t audio_size = audio.size();
-	size_t block_num  audio_size / BLOCK_SIZE;
+	/*TSize audio_size = audio.size();
+	TSize block_num  audio_size / BLOCK_SIZE;
 
 	vector <vector <TComplex>> */
 	// Library deinitialization (END)

@@ -8,7 +8,7 @@ all: start
 #	$(COMPILLER) $(FLAGS) -o da-lab4 main.o -L. lib/lib-z-search.a
 
 start: tmpg123.o read.o musiclib.o main.o
-	$(COMPILLER) $(FLAGS) -o prog tmpg123.o read.o musiclib.o main.o
+	$(COMPILLER) $(FLAGS) -o da-kp tmpg123.o read.o musiclib.o main.o
 
 main.o: main.cpp
 	$(COMPILLER) -c $(FLAGS) main.cpp
@@ -23,5 +23,4 @@ musiclib.o: musiclib.cpp
 	$(COMPILLER) -c $(FLAGS) musiclib.cpp
 
 clean:
-	rm -f *.o *.gch *.dat prog
-	#rm lib/lib-z-search.a
+	rm -f *.o *.gch *.dat da-kp

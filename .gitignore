@@ -35,6 +35,6 @@
 *.dat
 *.mp3
 *.bin
-prog
+da-kp
 out.txt
 !/lib/*

@@ -11,11 +11,12 @@
 #include <string>
 #include <mpg123.h>
 #include "tmpg123.h"
+#include "types.h"
 
 class TMusicLib {
 private:
 	std::vector <std::string> Files;
-	std::map <size_t, std::vector <std::pair<size_t, size_t>>> Lib; //(id, time)
+	std::map <TSize, std::vector <std::pair<TSize, TSize>>> Lib; //(id, time)
 	TMpg123 Mh;
 
 public:

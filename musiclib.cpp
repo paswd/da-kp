@@ -9,19 +9,22 @@
 #include <cmath>
 #include <vector>
 #include <mpg123.h>
+#include <algorithm>
 #include "read.h"
+#include "types.h"
 
 using namespace std;
 
-typedef unsigned long long TSize;
+//typedef unsigned long long TSize;
 
-const size_t CHECK_SIZE = 12;
+const TSize CHECK_SIZE = 12;
 const char CHECK[CHECK_SIZE] = "PasWD-KP-DA";
-const size_t MIN_DIFF = 1024;
+const TSize MIN_DIFF = 1024;
 const string NF_MESSAGE = "! NOT FOUND";
+const string MSG_DONE = "[DONE]";
 
 int StringComparison(const char *str1, const char *str2) {
-	for (size_t i = 0; true; i++) {
+	for (TSize i = 0; true; i++) {
 		if (str1[i] == '\0' && str2[i] != '\0') {
 			return -1;
 		}
@@ -59,7 +62,7 @@ void TMusicLib::Build(char *filename) {
 	string tmp_str = "";
 
 	cout << "Read filenames... ";
-	//size_t cnt = 0;
+	//TSize cnt = 0;
 	//cout << cnt << endl;
 	while (fscanf(in, "%c", &tmp) != EOF) {
 		if (tmp == '\n') {
@@ -76,21 +79,22 @@ void TMusicLib::Build(char *filename) {
 		this->Files.push_back(tmp_str);
 	}
 
-	cout << "[DONE]" << endl;
+	cout << MSG_DONE << endl;
 	cout << "Detected " << this->Files.size() << " filenames" << endl << endl;
 	cout << "Building library" << endl;
 	//Building map
-	vector <size_t> hash_arr;
+	vector <TSize> hash_arr;
 
-	for (size_t i = 0; i < this->Files.size(); i++) {
+	for (TSize i = 0; i < this->Files.size(); i++) {
 		//cout << i << endl;
 		cout << "Adding " << this->Files[i] << endl;
 		ReadSingleMP3(strdup(this->Files[i].c_str()), &hash_arr, &this->Mh);
-		for (size_t j = 0; j < hash_arr.size(); j++) {
+		for (TSize j = 0; j < hash_arr.size(); j++) {
 			this->Lib[hash_arr[j]].push_back(make_pair(i, j));
 		}
 	}
-	cout << "[DONE]" << endl << endl;
+	cout << MSG_DONE << endl << endl;
+	cout << "Added " << this->Lib.size() << " hash notes" << endl;
 	fclose(in);
 	cout << "SUCCESS!" << endl;
 }
@@ -107,8 +111,8 @@ void TMusicLib::Export(char *filename) {
 	TSize files_cnt = (TSize) this->Files.size();
 	fwrite(&files_cnt, sizeof(TSize), 1, out);
 	char nl = '\n';
-	for (size_t i = 0; i < this->Files.size(); i++) {
-		for (size_t j = 0; j < this->Files[i].size(); j++) {
+	for (TSize i = 0; i < this->Files.size(); i++) {
+		for (TSize j = 0; j < this->Files[i].size(); j++) {
 			char curr = this->Files[i][j];
 			fwrite(&curr, sizeof(char), 1, out);
 		}
@@ -125,14 +129,15 @@ void TMusicLib::Export(char *filename) {
 		fwrite(&hash, sizeof(TSize), 1, out);
 		TSize vector_cnt = i->second.size();
 		fwrite(&vector_cnt, sizeof(TSize), 1, out);
-		for (size_t j = 0; j < i->second.size(); j++) {
+		for (TSize j = 0; j < i->second.size(); j++) {
 			TSize write_tmp[2];
 			write_tmp[0] = (TSize) i->second[j].first;
 			write_tmp[1] = (TSize) i->second[j].second;
 			fwrite(write_tmp, sizeof(TSize), 2, out);
 		}
 	}
-	cout << "[DONE]" << endl << endl;
+	cout << MSG_DONE << endl << endl;
+	cout << this->Lib.size() << " hash notes was exported" << endl;
 	fclose(out);
 	cout << "SUCCESS!" << endl;
 }
@@ -158,8 +163,8 @@ void TMusicLib::Import(char *filename) {
 	cout << "Import filenames..." << endl;
 	TSize files_cnt;
 	fread(&files_cnt, sizeof(TSize), 1, in);
-	this->Files.resize((size_t) files_cnt);
-	for (size_t i = 0; i < this->Files.size(); i++) {
+	this->Files.resize((TSize) files_cnt);
+	for (TSize i = 0; i < this->Files.size(); i++) {
 		string tmp_str = "";
 		while (true) {
 			char tmp;
@@ -176,23 +181,24 @@ void TMusicLib::Import(char *filename) {
 	TSize map_size;
 	fread(&map_size, sizeof(TSize), 1, in);
 
-	for (size_t i = 0; i < (size_t) map_size; i++) {
+	for (TSize i = 0; i < (TSize) map_size; i++) {
 		TSize hash;
 		fread(&hash, sizeof(TSize), 1, in);
 		TSize vector_cnt;
 		fread(&vector_cnt, sizeof(TSize), 1, in);
-		for (size_t j = 0; j < (size_t) vector_cnt; j++) {
+		for (TSize j = 0; j < (TSize) vector_cnt; j++) {
 			TSize dat_in[2];
 			fread(dat_in, sizeof(TSize), 2, in);
-			this->Lib[(size_t) hash].push_back(make_pair((size_t) dat_in[0], (size_t) dat_in[1]));
+			this->Lib[(TSize) hash].push_back(make_pair((TSize) dat_in[0], (TSize) dat_in[1]));
 		}
 	}
-	cout << "[DONE]" << endl << endl;
+	cout << MSG_DONE << endl << endl;
+	cout << this->Lib.size() << " hash notes was imported" << endl;
 	fclose(in);
 	cout << "SUCCESS!" << endl;
 }
 
-void MapInit(map <size_t, pair <size_t, map <size_t, size_t>>> *mp, size_t song, size_t time) {
+void MapInit(map <TSize, pair <TSize, map <TSize, TSize>>> *mp, TSize song, TSize time) {
 	if (mp->find(song) == mp->end()) {
 		(*mp)[song].first = 0;
 		(*mp)[song].second[time] = 0;
@@ -205,10 +211,10 @@ void MapInit(map <size_t, pair <size_t, map <size_t, size_t>>> *mp, size_t song,
 	}
 }
 
-bool IsGreater(size_t a, size_t b) {
-	return a > b;
+bool IsGreater(pair <TSize, TSize> a, pair <TSize, TSize> b) {
+	return a.first > b.first;
 }
-size_t Diff(size_t a, size_t b) {
+TSize Diff(TSize a, TSize b) {
 	if (a > b) {
 		return a - b;
 	} else {
@@ -217,19 +223,21 @@ size_t Diff(size_t a, size_t b) {
 }
 
 string TMusicLib::Check(char *filename) {
-	vector <size_t> hash_arr;
+	printf("Filename: %s\n", filename);
+	vector <TSize> hash_arr;
 	ReadSingleMP3(filename, &hash_arr, &this->Mh);
-	map <size_t, pair <size_t, map <size_t, size_t>>> cnts;
+	map <TSize, pair <TSize, map <TSize, TSize>>> cnts;
+	cout << "Begin searching..." << endl;
 
-	for (size_t i = 0; i < hash_arr.size(); i++) {
-		for (size_t j = 0; j < this->Lib[hash_arr[i]].size(); j++) {
-			//Мегашикарная формула, которая заставит мой курсач работать
-			size_t song = this->Lib[hash_arr[i]][j].first
-			size_t time = this->Lib[hash_arr[i]][j].second;
+	for (TSize i = 0; i < hash_arr.size(); i++) {
+		for (TSize j = 0; j < this->Lib[hash_arr[i]].size(); j++) {
+			TSize song = this->Lib[hash_arr[i]][j].first;
+			TSize time = this->Lib[hash_arr[i]][j].second;
 			MapInit(&cnts, song, time);
 
-			//cnts[song].second[time - i]++;
-			size_t current_value = ++cnts[song].second[time - i];
+			cnts[song].second[time - i]++;
+			TSize current_value = cnts[song].second[time - i];
+			//TSize current_value = ++cnts[song].second[time - i];
 			if (current_value > cnts[song].first) {
 				cnts[song].first = current_value;
 			}
@@ -241,24 +249,30 @@ string TMusicLib::Check(char *filename) {
 			}*/
 		}
 	}
-	vector <pair <size_t, size_t>> found(0);
-	for (auto i = cnts.begin(); i <= cnts.end(); i++) {
+	cout << "cnts.size() = " << cnts.size() << endl;
+	vector <pair <TSize, TSize>> found(0);
+	for (auto i = cnts.begin(); i != cnts.end(); i++) {
 		found.push_back(make_pair(i->second.first, i->first));
 	}
+	cout << MSG_DONE << endl;
+	cout << "Found size = " << found.size() << endl;
 	if (found.size() < 2) {
+		cout << "NOT FOUND: too small same blocks" << endl;
 		return NF_MESSAGE;
 	}
 	sort(found.begin(), found.end(), IsGreater);
 
 	if (Diff(found[0].second, found[1].second) < MIN_DIFF) {
+		cout << "NOT FOUND: found same songs" << endl;
 		return NF_MESSAGE;
 	}
+
 
 	return this->Files[found[0].second];
 }
 
 void TMusicLib::PrintFiles(void) {
-	for (size_t i = 0; i < this->Files.size(); i++) {
+	for (TSize i = 0; i < this->Files.size(); i++) {
 		cout << this->Files[i] << endl;
 	}
 }
