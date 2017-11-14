@@ -9,6 +9,17 @@
 #include <mpg123.h>
 
 TMpg123::TMpg123(void) {
+	this->Create();
+}
+TMpg123::~TMpg123(void) {
+	this->Delete();
+}
+void TMpg123::Restart(void) {
+	this->Delete();
+	this->Create();
+}
+
+void TMpg123::Create(void) {
 	// Library initialization (BEGIN)
 	assert(mpg123_init() == MPG123_OK);
 	this->Mh = mpg123_new(NULL, NULL);
@@ -18,7 +29,7 @@ TMpg123::TMpg123(void) {
 	// Library initialization (END)
 }
 
-TMpg123::~TMpg123(void) {
+void TMpg123::Delete(void) {
 	// Library deinitialization (BEGIN)
 	mpg123_delete(this->Mh);
 	mpg123_exit();

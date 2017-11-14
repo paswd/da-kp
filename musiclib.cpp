@@ -59,6 +59,7 @@ void TMusicLib::Build(char *filename) {
 
 	if (in == NULL) {
 		cout << "ERROR: Couldn't open file" << endl;
+		fclose(in);
 		return;
 	}
 	char tmp;
@@ -90,7 +91,7 @@ void TMusicLib::Build(char *filename) {
 
 	for (TSize i = 0; i < this->Files.size(); i++) {
 		//cout << i << endl;
-		cout << "Adding " << this->Files[i] << endl;
+		cout << "Adding \"" << this->Files[i] << "\"" << endl;
 		ReadSingleMP3(strdup(this->Files[i].c_str()), &hash_arr, &this->Mh);
 		for (TSize j = 0; j < hash_arr.size(); j++) {
 			this->Lib[hash_arr[j]].push_back(make_pair(i, j));
@@ -236,7 +237,7 @@ TSize Diff(TSize a, TSize b) {
 }
 
 string TMusicLib::Check(char *filename) {
-	printf("Filename: %s\n", filename);
+	printf("Filename: \"%s\"\n", filename);
 	vector <TSize> hash_arr;
 	cout << "Begin searching..." << endl;
 	ReadSingleMP3(filename, &hash_arr, &this->Mh);
@@ -299,7 +300,7 @@ string TMusicLib::Check(char *filename) {
 		cout << MSG_NOT_FOUND << "too short sample" << endl;
 		return NF_MESSAGE;
 	}
-	cout << MSG_FOUND << this->Files[found[0].second] << endl;
+	cout << MSG_FOUND << "\"" << this->Files[found[0].second] << "\"" << endl;
 	return this->Files[found[0].second];
 }
 
