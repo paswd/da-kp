@@ -19,7 +19,8 @@ using namespace std;
 
 const TSize CHECK_SIZE = 12;
 const char CHECK[CHECK_SIZE] = "PasWD-KP-DA";
-const TSize MIN_DIFF = 2;
+const TSize MIN_DIV = 2;
+const TSize MIN_DIFF_ABS = 8;
 const string NF_MESSAGE = "! NOT FOUND";
 const string MSG_DONE = "[DONE]";
 const string MSG_SPACE = "    ";
@@ -217,6 +218,13 @@ bool IsGreater(pair <TSize, TSize> a, pair <TSize, TSize> b) {
 }
 TSize Diff(TSize a, TSize b) {
 	if (a > b) {
+		return a - b;
+	} else {
+		return b - a;
+	}
+}
+TSize Div(TSize a, TSize b) {
+	if (a > b) {
 		return a / b;
 	} else {
 		return b / a;
@@ -276,12 +284,13 @@ string TMusicLib::Check(char *filename) {
 	sort(found.begin(), found.end(), IsGreater);
 
 	if (found.size() > 1) {
-		if (Diff(found[0].first, found[1].first) < MIN_DIFF) {
+		if (Div(found[0].first, found[1].first) < MIN_DIV ||
+				Diff(found[0].first, found[1].first) < MIN_DIFF_ABS) {
 			cout << MSG_NOT_FOUND << "found same songs" << endl;
 			return NF_MESSAGE;
 		}
 	}
-	if (found[0].first < MIN_DIFF) {
+	if (found[0].first < MIN_DIFF_ABS) {
 		cout << MSG_NOT_FOUND << "too short sample" << endl;
 		return NF_MESSAGE;
 	}
