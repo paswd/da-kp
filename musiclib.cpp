@@ -19,7 +19,7 @@ using namespace std;
 
 const TSize CHECK_SIZE = 12;
 const char CHECK[CHECK_SIZE] = "PasWD-KP-DA";
-const TSize MIN_DIFF = 8;
+const TSize MIN_DIFF = 2;
 const string NF_MESSAGE = "! NOT FOUND";
 const string MSG_DONE = "[DONE]";
 const string MSG_SPACE = "    ";
@@ -238,9 +238,9 @@ bool IsGreater(pair <TSize, TSize> a, pair <TSize, TSize> b) {
 }
 TSize Diff(TSize a, TSize b) {
 	if (a > b) {
-		return a - b;
+		return a / b;
 	} else {
-		return b - a;
+		return b / a;
 	}
 }
 
