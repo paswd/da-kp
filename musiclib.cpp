@@ -225,8 +225,14 @@ TSize Diff(TSize a, TSize b) {
 }
 TSize Div(TSize a, TSize b) {
 	if (a > b) {
+		if (b == 0) {
+			return 0;
+		}
 		return a / b;
 	} else {
+		if (a == 0) {
+			return 0;
+		}
 		return b / a;
 	}
 }
