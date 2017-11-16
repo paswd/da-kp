@@ -106,7 +106,6 @@ void TransformAudioToHashArray(vector <TDouble> *audio, vector <TSize> *out) {
 	TSize block_num = audio_size / BLOCK_SIZE;
 
 	out->resize(0);
-	//ofstream ofs("check_data.txt", std::ofstream::out);
 
 	for (TSize i = 0; i < block_num; i++) {
 		vector <TComplex> complex_array(BLOCK_SIZE);
@@ -135,10 +134,8 @@ void TransformAudioToHashArray(vector <TDouble> *audio, vector <TSize> *out) {
 				max_freq[id] = freq;
 			}
 		}
-		//ofs << max_freq[0] << " " << max_freq[1] << " " << max_freq[2] << " " << max_freq[3] << endl;
 		out->push_back(GetHashBy4Elems(max_freq));
 	}
-	//ofs.close();
 }
 
 void ReadSingleMP3(char *name, vector <TSize> *out, TMpg123 *mh) {
