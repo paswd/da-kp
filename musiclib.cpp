@@ -19,7 +19,7 @@ using namespace std;
 
 const TSize CHECK_SIZE = 12;
 const char CHECK[CHECK_SIZE] = "PasWD-KP-DA";
-const TSize MIN_DIFF = 64;
+const TSize MIN_DIFF = 8;
 const string NF_MESSAGE = "! NOT FOUND";
 const string MSG_DONE = "[DONE]";
 const string MSG_SPACE = "    ";
@@ -97,6 +97,12 @@ void TMusicLib::Build(char *filename) {
 			this->Lib[hash_arr[j]].push_back(make_pair(i, j));
 		}
 	}
+	/*ofstream ofs("libcheck_data.txt", std::ofstream::out);
+	ofs << "Hash num: " << hash_arr.size() << endl;
+	for (TSize i = 0; i < hash_arr.size(); i++) {
+		ofs << hash_arr[i] << endl;
+	}
+	ofs.close();*/
 	cout << MSG_DONE << endl << endl;
 	cout << "Added " << this->Lib.size() << " hash notes" << endl;
 	fclose(in);
@@ -245,6 +251,13 @@ string TMusicLib::Check(char *filename) {
 	ReadSingleMP3(filename, &hash_arr, &this->Mh);
 	map <TSize, pair <TSize, map <TSize, TSize>>> cnts;
 
+	/*ofstream ofs("samplecheck_data.txt", std::ofstream::out);
+	ofs << "Hash num: " << hash_arr.size() << endl;
+	for (TSize i = 0; i < hash_arr.size(); i++) {
+		ofs << hash_arr[i] << endl;
+	}
+	ofs.close();*/
+
 	//ofstream ofs("check_data.txt", std::ofstream::out);
 	//ofs << "Hash num = " << hash_arr.size() << endl;
 	//ofs << "=====================" << endl << endl;
@@ -293,8 +306,9 @@ string TMusicLib::Check(char *filename) {
 	sort(found.begin(), found.end(), IsGreater);
 
 	if (found.size() > 1) {
-		if (Diff(found[0].second, found[1].second) < MIN_DIFF) {
+		if (Diff(found[0].first, found[1].first) < MIN_DIFF) {
 			cout << MSG_NOT_FOUND << "found same songs" << endl;
+			//cout << found[0].first << " " << found[1].first << endl;
 			return NF_MESSAGE;
 		}
 	}

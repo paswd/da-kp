@@ -9,6 +9,7 @@
 #include <vector>
 #include <complex>
 #include <mpg123.h>
+#include <fstream>
 #include "types.h"
 
 using namespace std;
@@ -105,6 +106,7 @@ void TransformAudioToHashArray(vector <TDouble> *audio, vector <TSize> *out) {
 	TSize block_num = audio_size / BLOCK_SIZE;
 
 	out->resize(0);
+	//ofstream ofs("check_data.txt", std::ofstream::out);
 
 	for (TSize i = 0; i < block_num; i++) {
 		vector <TComplex> complex_array(BLOCK_SIZE);
@@ -120,6 +122,9 @@ void TransformAudioToHashArray(vector <TDouble> *audio, vector <TSize> *out) {
 			highval[i] = -1.;
 		}
 		TSize max_freq[RANGE_NUM];
+		for (TSize i = 0; i < RANGE_NUM; i++) {
+			max_freq[i] = 0;
+		}
 
 		for (TSize freq = RANGE_MIN_VALUE; freq < RANGE_MAX_VALUE; freq++) {
 			TDouble intensity = log(abs(complex_array[freq]) + 1.);
@@ -130,9 +135,10 @@ void TransformAudioToHashArray(vector <TDouble> *audio, vector <TSize> *out) {
 				max_freq[id] = freq;
 			}
 		}
-
+		//ofs << max_freq[0] << " " << max_freq[1] << " " << max_freq[2] << " " << max_freq[3] << endl;
 		out->push_back(GetHashBy4Elems(max_freq));
 	}
+	//ofs.close();
 }
 
 void ReadSingleMP3(char *name, vector <TSize> *out, TMpg123 *mh) {
