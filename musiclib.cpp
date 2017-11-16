@@ -245,10 +245,31 @@ TSize Diff(TSize a, TSize b) {
 }
 
 string TMusicLib::Check(char *filename) {
-	printf("Filename: \"%s\"\n", filename);
+	FILE *in = fopen(filename, "r");
+
+	if (in == NULL) {
+		cout << "ERROR: Couldn't open sample file" << endl;
+		fclose(in);
+		return NF_MESSAGE;
+	}
+	char tmp;
+	string sample_filename = "";
+
+	cout << "Read sample filename... ";
+	//TSize cnt = 0;
+	//cout << cnt << endl;
+	while (fscanf(in, "%c", &tmp) != EOF) {
+		if (tmp == '\n') {
+			break;
+		}
+		sample_filename += tmp;
+	}
+	cout << MSG_DONE << endl;
+	//printf("Filename: \"%s\"\n", filename);
+	cout << "Filename: " << sample_filename << endl;
 	vector <TSize> hash_arr;
 	cout << "Begin searching..." << endl;
-	ReadSingleMP3(filename, &hash_arr, &this->Mh);
+	ReadSingleMP3(strdup(sample_filename.c_str()), &hash_arr, &this->Mh);
 	map <TSize, pair <TSize, map <TSize, TSize>>> cnts;
 
 	/*ofstream ofs("samplecheck_data.txt", std::ofstream::out);
