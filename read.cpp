@@ -86,7 +86,7 @@ void FFT(vector <TComplex> *arr) {
 TSize GetRangeID(TSize freq) {
 	TSize res;
 	for (res = 0; res < RANGE_NUM; res++) {
-		if (RANGE[res] < freq) {
+		if (RANGE[res] >= freq) {
 			return res;
 		}
 	}
